@@ -2,15 +2,17 @@ package com.prezydium;
 
 import com.google.maps.model.GeocodingResult;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 public class App {
     public static void main(String[] args) throws Exception {
+        validateInputParameters(args);
+
         String googleApiKey = args[0];
+        String inputFilePath = args[1];
         List<String[]> outputPoints = new ArrayList<>();
-        List<String[]> inputPoints = new CsvProcessor().readAll();
+        List<String[]> inputPoints = CsvProcessor.readAll(inputFilePath);
         QueryMapApi queryMapApi = new QueryMapApi(googleApiKey);
         inputPoints.forEach(point -> {
             String address = point[3] + " " + point[4] + " ," + point[2];
@@ -23,7 +25,12 @@ public class App {
                     String.valueOf(geocodingResult.geometry.location.lng)
             });
         });
-        new CsvProcessor().csvWriterAll(outputPoints, Paths.get(
-                ClassLoader.getSystemResource("resultpoints.csv").toURI()));
+        CsvProcessor.csvWriteAll(outputPoints, "resultpoints.csv");
+    }
+
+    private static void validateInputParameters(String[] args) {
+        if (args.length != 2) {
+            throw  new IllegalArgumentException("Application should recive 2 input parameters: API key and input csv file path");
+        }
     }
 }
